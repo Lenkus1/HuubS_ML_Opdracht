@@ -1,24 +1,59 @@
+from typing import Dict, List, Tuple
+
 import matplotlib.pyplot as plt
 import numpy as np
-import tensorflow as tf
+import pandas as pd
+import seaborn as sns
 from loguru import logger
+from sklearn import pipeline
+from sklearn.model_selection import GridSearchCV
 
-# from linting import Any
+from src import protocol
 
-logger.add("../reports/debug.log")
 
-def plot_batch(
-    generator: tf.keras.preprocessing.image.ImageDataGenerator, grid: int = 9
+# for 1_First_simple_model
+
+def class_balance(x: np.ndarray, col: str) -> None:
+    pd.DataFrame(x, columns=[col]).groupby(col).size().plot.bar()
+
+
+def cfm_heatmap(
+    cfm: np.ndarray,
+    figsize: tuple = (8, 8),
+    scale: float = None,
+    labels: List[str] = None,
+    vmin: float = None,
+    vmax: float = None,
 ) -> None:
-    inv_map = {v: k for k, v in generator.class_indices.items()}
+    """
+    figsize: tuple, default (8,8)
+    scale: string. The direction over which the numbers are scaled.
+        Either None, 'total', 'rowwise' or 'colwise'
+    """
 
-    plt.figure(figsize=(30, 10))
-    image, label = next(generator)
-    logger.info(f"image shape: {image.shape}")
-    logger.info(f"label shape: {label.shape}")
-    gridn = int(np.ceil(np.sqrt(grid)))
-    for i in range(grid):
-        plt.subplot(gridn, gridn, i + 1)
-        plt.imshow(image[i])
-        plt.title(inv_map[np.argmax(label[i])])
-        plt.axis("off")
+    if scale == "total":
+        cfm_norm = cfm / np.sum(cfm)
+    elif scale == "rowwise":
+        cfm_norm = cfm / np.sum(cfm, axis=1, keepdims=True)
+    elif scale == "colwise":
+        cfm_norm = cfm / np.sum(cfm, axis=0, keepdims=True)
+    else:
+        cfm_norm = cfm
+    plt.figure(figsize=figsize)
+    if labels is not None:
+        plot = sns.heatmap(
+            cfm_norm,
+            annot=cfm_norm,
+            vmin=vmin,
+            vmax=vmax,
+            xticklabels=labels,
+            yticklabels=labels,
+        )
+    else:
+        plot = sns.heatmap(cfm_norm, annot=cfm_norm, vmin=vmin, vmax=vmax)
+    plot.set(xlabel="Predicted", ylabel="Target")
+
+
+
+
+
