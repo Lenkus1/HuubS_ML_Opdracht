@@ -36,7 +36,28 @@ def set_class(
     """
     return (y_train == cl, y_test == cl)
 
+def data_set_maken(datadir_processed
+) -> None:
+    # data en label definiëren
+    data = [] 
+    labels = []
 
+    # met behulp van loop alle foto's in de 10 subdirectories doorlopen
+    for f in sorted(os.listdir(datadir_processed)):
+        folder = os.path.join(datadir_processed, f)
+        if os.path.isdir(folder):
+        
+            for i in sorted(os.listdir(folder)):
+                image=tf.keras.preprocessing.image.load_img(folder+'/'+i, color_mode='grayscale', # omzetten naar 1 channel voor lineair model
+                target_size= (64,64))
+                image=np.array(image)
+                data.append(image)
+                labels.append(f)    # foldernaam als label
+
+    data = np.array(data)
+    labels = np.array(labels) 
+
+    return data, labels
 
 
 
